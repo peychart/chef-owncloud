@@ -48,27 +48,26 @@ bash 'mysqlInitPassword' do
     service mysql stop
     mysqld_safe --skip-grant-tables &
     sleep 2
-    mysql -h localhost <<@@@
-    USE mysql
-    UPDATE user
-    SET password = password(\'#{node['chef-owncloud']['mysql_root_password']}\')
-    WHERE  USER = 'root' AND host = 'localhost';
-    quit
-    @@@
+    mysql -h localhost <<EOF
+USE mysql
+UPDATE user
+SET password = password(\'#{node['chef-owncloud']['mysql_root_password']}\')
+WHERE  USER = 'root' AND host = 'localhost';
+quit
+EOF
     mysqladmin shutdown
     service mysql start
-    sleep 3
   EOH
 end if node['chef-owncloud']['mysql_root_password']
 
-bash 'createDatabse' do
+bash 'createDatabase' do
   code <<-EOH
-    mysql -u root -p #{node['chef-owncloud']['mysql_root_password']} <<@@@
-    USE mysql
-    CREATE USER \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
-    CREATE DATABASE IF NOT EXISTS owncloud;
-    GRANT ALL PRIVILEGES ON owncloud.* TO \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
-    quit
-    EOF
+    mysql -u root -p#{node['chef-owncloud']['mysql_root_password']} <<EOF
+USE mysql
+CREATE USER \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
+CREATE DATABASE IF NOT EXISTS owncloud;
+GRANT ALL PRIVILEGES ON owncloud.* TO \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
+quit
+EOF
   EOH
-end
+end if node['chef-owncloud']['mysql_root_password']
