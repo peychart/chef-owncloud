@@ -57,15 +57,13 @@ bash 'mysqlInitPassword' do
     @@@
     mysqladmin shutdown
     service mysql start
+    sleep 3
   EOH
 end if node['chef-owncloud']['mysql_root_password']
 
 bash 'createDatabse' do
   code <<-EOH
-    service mysql stop
-    mysqld_safe --skip-grant-tables &
-    sleep 2
-    mysql -h localhost <<@@@
+    mysql -u root -p #{node['chef-owncloud']['mysql_root_password']} <<@@@
     USE mysql
     CREATE USER \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
     CREATE DATABASE IF NOT EXISTS owncloud;
