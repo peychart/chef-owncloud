@@ -44,13 +44,26 @@ package 'php5-ldap' do
   action :install
 end
 
-bah "setssl" do
+package 'libreoffice-common' do
+  package_name 'libreoffice-common'
+  action :install
+end
+
+bash "setssl" do
   code <<-EOH
-  a2enmod ssl
-  a2ensite default-ssl
-  a2enmod rewrite
-  service apache2 reload
+    a2enmod ssl
+    a2ensite default-ssl
+    a2enmod rewrite
+    service apache2 reload
+    grep -w forcessl /etc/owncloud/config.php| grep -qsw true || ed /etc/owncloud/config.php <<EOF
+/);
+i
+  'forcessl' => true,
+.
+wq
+EOF
   EOH
+end
 
 bash "link" do
   code "if [ -d /var/www/owncloud/config ] && [ ! -d /etc/owncloud ]; then ln -s /var/www/owncloud/config /etc/owncloud; fi"
