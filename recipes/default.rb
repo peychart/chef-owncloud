@@ -39,6 +39,19 @@ package 'owncloud' do
   action :install
 end
 
+package 'php5-ldap' do
+  package_name 'php5-ldap'
+  action :install
+end
+
+bah "setssl" do
+  code <<-EOH
+  a2enmod ssl
+  a2ensite default-ssl
+  a2enmod rewrite
+  service apache2 reload
+  EOH
+
 bash "link" do
   code "if [ -d /var/www/owncloud/config ] && [ ! -d /etc/owncloud ]; then ln -s /var/www/owncloud/config /etc/owncloud; fi"
 end
@@ -64,7 +77,6 @@ bash 'createDatabase' do
   code <<-EOH
     mysql -u root -p#{node['chef-owncloud']['mysql_root_password']} <<EOF
 USE mysql
-CREATE USER \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
 CREATE DATABASE IF NOT EXISTS owncloud;
 GRANT ALL PRIVILEGES ON owncloud.* TO \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
 quit
