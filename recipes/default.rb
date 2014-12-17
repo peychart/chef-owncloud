@@ -23,7 +23,7 @@ bash "wget" do
   not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
 end
 
-execute 'apt-update' do
+execute 'apt-get update' do
   action :nothing
 end
 
@@ -34,7 +34,7 @@ template '/etc/apt/sources.list.d/owncloud.list' do
   mode '0644'
   action :create
   not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
-  notifies :run, "execute[apt-update]", :immediately
+  notifies :run, "execute[apt-get update]", :immediately
 end
 
 %w( owncloud php5-ldap libreoffice-common ).each do |pack|
