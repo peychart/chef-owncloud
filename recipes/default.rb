@@ -48,7 +48,7 @@ bash "etclink" do
   not_if { ::File.exists?('/etc/owncloud') }
 end
 
-template '/etc/owncloud/config.php.test' do
+template '/etc/owncloud/config.php' do
   source 'config.php.erb'
   owner 'root'
   group 'root'
