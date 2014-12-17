@@ -1,0 +1,43 @@
+<?php
+/**
+ * See: config.sample.php
+ */
+$CONFIG = array (
+  'instanceid' => '',
+  'passwordsalt' => '',
+  'secret' => '',
+  'trusted_domains' => 
+   array (
+    0 => '<%=@fqdn-%>',
+   ),
+  'datadirectory' => '<%=@datadirectory-%>',
+<% if @forcessl %>
+  'overwrite.cli.url' => 'https://<%=@fqdn-%>/owncloud',
+<% else %>
+  'overwrite.cli.url' => 'http://<%=@fqdn-%>/owncloud',
+<% end %>
+  'dbtype' => '<%=@dbtype-%>',
+  'version' => '',
+  'dbname' => '<%=@dbname-%>',
+  'dbhost' => '<%=@dbhost-%>',
+  'dbtableprefix' => 'oc_',
+  'dbuser' => '<%=@dbname-%>',
+  'dbpassword' => '<%=@dbpassword-%>',
+  'installed' => false,
+  'default_language' => '<%=@language-%>',
+  'forcessl' => <%=@forcessl-%>,
+  'proxy' => '<%=@proxy-%>',
+
+  'defaultapp' => 'files',
+  'knowledgebaseenabled' => true,
+  'enable_avatars' => true,
+  'allow_user_to_change_display_name' => false,
+
+  'log_type' => 'owncloud',
+  'logfile' => 'owncloud.log',
+  'loglevel' => 2,
+  'log_rotate_size' => false,
+
+  'blacklisted_files' => array('.htaccess'),
+);
+

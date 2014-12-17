@@ -18,81 +18,103 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+bash "wget" do
+  code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
+  not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
+end
+
+execute 'apt-update' do
+  action :nothing
+end
+
 template '/etc/apt/sources.list.d/owncloud.list' do
   source 'apt.sources.list.erb'
   owner 'root'
   group 'root'
   mode '0644'
   action :create
+  not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
+  notifies :run, "execute[apt-update]", :immediately
 end
 
-bash "wget" do
-  code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
+%w( owncloud php5-ldap libreoffice-common ).each do |pack|
+  package pack do
+    action :install
+  end
 end
 
-execute 'apt-get update' do
-  action :run
+bash "etclink" do
+  code "if [ -d /var/www/owncloud/config ]; then ln -s /var/www/owncloud/config /etc/owncloud; fi"
+  not_if { ::File.exists?('/etc/owncloud') }
 end
 
-package 'owncloud' do
-  package_name 'owncloud'
-  action :install
+template '/etc/owncloud/config.php.test' do
+  source 'config.php.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables({
+    :fqdn => node['fqdn'],
+    :datadirectory => node['chef-owncloud']['datadirectory'],
+    :forcessl => node['chef-owncloud']['ssl']['force'],
+    :dbtype => node['chef-owncloud']['dbtype'],
+    :dbhost => node['chef-owncloud']['dbhost'],
+    :dbname => node['chef-owncloud']['dbname'],
+    :dbpassword => node['chef-owncloud']['dbpassword'],
+    :language => node['chef-owncloud']['default_language'],
+    :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
+    :proxy => (node['chef-owncloud']['proxy'] ? node['chef-owncloud']['proxy'] : '')
+  })
+  not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
-package 'php5-ldap' do
-  package_name 'php5-ldap'
-  action :install
+if node['chef-owncloud']['ssl']['enable']
+  bash "setssl" do
+    code <<-EOH
+      a2enmod ssl
+      a2ensite default-ssl
+      a2enmod rewrite
+      service apache2 reload
+#      grep -w forcessl /etc/owncloud/config.php| grep -qsw true || ed /etc/owncloud/config.php <<EOF
+#/);
+#i
+#  'forcessl' => true,
+#.
+#wq
+#EOF
+    EOH
+  end
 end
 
-package 'libreoffice-common' do
-  package_name 'libreoffice-common'
-  action :install
-end
-
-bash "setssl" do
-  code <<-EOH
-    a2enmod ssl
-    a2ensite default-ssl
-    a2enmod rewrite
-    service apache2 reload
-    grep -w forcessl /etc/owncloud/config.php| grep -qsw true || ed /etc/owncloud/config.php <<EOF
-/);
-i
-  'forcessl' => true,
-.
-wq
-EOF
-  EOH
-end
-
-bash "link" do
-  code "if [ -d /var/www/owncloud/config ] && [ ! -d /etc/owncloud ]; then ln -s /var/www/owncloud/config /etc/owncloud; fi"
-end
-
-bash 'mysqlInitPassword' do
-  code <<-EOH
-    service mysql stop
-    mysqld_safe --skip-grant-tables &
-    sleep 2
-    mysql -h localhost <<EOF
+if node['chef-owncloud']['dbtype'] == 'mysql'
+  bash 'mysqlInitPassword' do
+    code <<-EOH
+      while true; do
+        service mysql stop && break
+      done
+      mysqld_safe --skip-grant-tables &
+      sleep 2
+      mysql -h localhost <<EOF
 USE mysql
 UPDATE user
-SET password = password(\'#{node['chef-owncloud']['mysql_root_password']}\')
+SET password = password(\'#{node['chef-owncloud']['dbrootPassword']}\')
 WHERE  USER = 'root' AND host = 'localhost';
 quit
 EOF
-    mysqladmin shutdown
-    service mysql start
-  EOH
-end if node['chef-owncloud']['mysql_root_password']
+      mysqladmin shutdown
+      service mysql start
+    EOH
+  end if node['chef-owncloud']['dbrootPassword']
 
-bash 'createDatabase' do
-  code <<-EOH
-    mysql -u root -p#{node['chef-owncloud']['mysql_root_password']} <<EOF
+  bash 'createDatabase' do
+    code <<-EOH
+      mysql -u root -p#{node['chef-owncloud']['dbrootPassword']} <<EOF
 USE mysql
 CREATE DATABASE IF NOT EXISTS owncloud;
-GRANT ALL PRIVILEGES ON owncloud.* TO \'#{node['chef-owncloud']['database_name']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['database_password']}\';
+GRANT ALL PRIVILEGES ON owncloud.* TO \'#{node['chef-owncloud']['dbname']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['dbpassword']}\';
 quit
 EOF
-  EOH
-end if node['chef-owncloud']['mysql_root_password']
+    EOH
+  end if node['chef-owncloud']['dbrootPassword']
+end
+
