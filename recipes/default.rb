@@ -37,7 +37,7 @@ template '/etc/apt/sources.list.d/owncloud.list' do
   notifies :run, "execute[apt-get update]", :immediately
 end
 
-%w( owncloud php5-ldap libreoffice-common ).each do |pack|
+%w( owncloud php5-ldap php-apc libreoffice-common ).each do |pack|
   package pack do
     action :install
   end
@@ -48,7 +48,7 @@ bash "etclink" do
   not_if { ::File.exists?('/etc/owncloud') }
 end
 
-template '/etc/owncloud/config.php' do
+template '/etc/owncloud/config.php.' do
   source 'config.php.erb'
   owner 'root'
   group 'root'
@@ -63,9 +63,9 @@ template '/etc/owncloud/config.php' do
     :dbpassword => node['chef-owncloud']['dbpassword'],
     :language => node['chef-owncloud']['default_language'],
     :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
-    :proxy => (node['chef-owncloud']['proxy'] ? node['chef-owncloud']['proxy'] : '')
+    :other => node['chef-owncloud']['otheroptions']
   })
-  not_if { ::File.exists?('/etc/owncloud/config.php') }
+  not_if { ::File.exists?('/etc/owncloud/config.php.') }
 end
 
 if node['chef-owncloud']['ssl']['enable']
@@ -97,24 +97,26 @@ if node['chef-owncloud']['dbtype'] == 'mysql'
       mysql -h localhost <<EOF
 USE mysql
 UPDATE user
-SET password = password(\'#{node['chef-owncloud']['dbrootPassword']}\')
+SET password = password(\'#{node['chef-owncloud']['dbrootpassword']}\')
 WHERE  USER = 'root' AND host = 'localhost';
 quit
 EOF
-      mysqladmin shutdown
+      while true; do
+        mysqladmin shutdown && break
+      done
       service mysql start
     EOH
-  end if node['chef-owncloud']['dbrootPassword']
+  end if node['chef-owncloud']['dbrootpassword']
 
   bash 'createDatabase' do
     code <<-EOH
-      mysql -u root -p#{node['chef-owncloud']['dbrootPassword']} <<EOF
+      mysql -u root -p#{node['chef-owncloud']['dbrootpassword']} <<EOF
 USE mysql
 CREATE DATABASE IF NOT EXISTS owncloud;
 GRANT ALL PRIVILEGES ON owncloud.* TO \'#{node['chef-owncloud']['dbname']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['dbpassword']}\';
 quit
 EOF
     EOH
-  end if node['chef-owncloud']['dbrootPassword']
+  end if node['chef-owncloud']['dbrootpassword']
 end
 
