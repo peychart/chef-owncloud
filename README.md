@@ -55,7 +55,7 @@
     <td><tt>['chef-owncloud']['dbrootpassword']</tt></td>
     <td>String</td>
     <td>allows to (re-)init the root password</td>
-    <td><tt>nil</tt></td>
+    <td><tt>secret</tt></td>
   </tr>
   <tr>
     <td><tt>['chef-owncloud']['dbname']</tt></td>
