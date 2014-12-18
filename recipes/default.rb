@@ -60,6 +60,7 @@ template '/etc/owncloud/config.php.' do
     :dbtype => node['chef-owncloud']['dbtype'],
     :dbhost => node['chef-owncloud']['dbhost'],
     :dbname => node['chef-owncloud']['dbname'],
+    :dbuser => (node['chef-owncloud']['dbuser'] ? node['chef-owncloud']['dbuser'] : ''),
     :dbpassword => node['chef-owncloud']['dbpassword'],
     :language => node['chef-owncloud']['default_language'],
     :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),

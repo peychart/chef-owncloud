@@ -16,21 +16,63 @@
     <th>Default</th>
   </tr>
   <tr>
-    <td><tt>['chef-owncloud']['root_mysql_password']</tt></td>
+    <td><tt>['chef-owncloud']['datadirectory']</tt></td>
+    <td>String</td>
+    <td>the data directory</td>
+    <td><tt>'/var/www/owncloud/data'</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['chef-owncloud']['ssl']['enable']</tt></td>
+    <td>Boolean</td>
+    <td>To enable ssl</td>
+    <td><tt>true</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['chef-owncloud']['ssl']['force']</tt></td>
+    <td>Boolean</td>
+    <td>force the use of ssl</td>
+    <td><tt>true</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['chef-owncloud']['otheroptions']</tt></td>
+    <td>Array String</td>
+    <td>Other configuration options</td>
+    <td><tt>["'enable_avatars' => true","'appstoreenabled' => false","'blacklisted_files' => array('.htaccess')"]</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['chef-owncloud']['dbhost']</tt></td>
+    <td>String</td>
+    <td>host hosting the database</td>
+    <td><tt>127.0.0.1</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['chef-owncloud']['dbtype']</tt></td>
+    <td>String</td>
+    <td>type of the database</td>
+    <td><tt>mysql(the only currently possible)</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['chef-owncloud']['dbrootpassword']</tt></td>
     <td>String</td>
     <td>allows to (re-)init the root password</td>
     <td><tt>nil</tt></td>
   </tr>
   <tr>
-    <td><tt>['chef-owncloud']['database_name']</tt></td>
+    <td><tt>['chef-owncloud']['dbname']</tt></td>
     <td>String</td>
-    <td>the name of the MySQL database</td>
+    <td>name of the owncloud database</td>
     <td><tt>owncloud</tt></td>
   </tr>
   <tr>
-    <td><tt>['chef-owncloud']['database_password']</tt></td>
+    <td><tt>['chef-owncloud']['dbuser']</tt></td>
     <td>String</td>
-    <td>the password of the ownCloud MySQL database</td>
+    <td>Admin of the owncloud database</td>
+    <td><tt>''</tt></td>
+  </tr>
+  <tr>
+    <td><tt>['chef-owncloud']['dbpassword']</tt></td>
+    <td>String</td>
+    <td>the password of the ownCloud database</td>
     <td><tt>secret</tt></td>
   </tr>
 </table>
