@@ -67,7 +67,7 @@
     <td><tt>['chef-owncloud']['dbuser']</tt></td>
     <td>String</td>
     <td>Admin of the owncloud database</td>
-    <td><tt>''</tt></td>
+    <td><tt>''(default is ['dbname'])</tt></td>
   </tr>
   <tr>
     <td><tt>['chef-owncloud']['dbpassword']</tt></td>
