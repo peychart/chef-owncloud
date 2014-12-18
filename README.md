@@ -48,8 +48,8 @@
   <tr>
     <td><tt>['chef-owncloud']['dbtype']</tt></td>
     <td>String</td>
-    <td>type of the database</td>
-    <td><tt>mysql(the only currently possible)</tt></td>
+    <td>type of the database ('mysql' is the only currently possible)</td>
+    <td><tt>mysql</tt></td>
   </tr>
   <tr>
     <td><tt>['chef-owncloud']['dbrootpassword']</tt></td>
@@ -66,8 +66,8 @@
   <tr>
     <td><tt>['chef-owncloud']['dbuser']</tt></td>
     <td>String</td>
-    <td>Admin of the owncloud database</td>
-    <td><tt>''(default is ['dbname'])</tt></td>
+    <td>Admin of the owncloud database (['dbname'] if nil)</td>
+    <td><tt>''</tt></td>
   </tr>
   <tr>
     <td><tt>['chef-owncloud']['dbpassword']</tt></td>
