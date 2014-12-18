@@ -48,7 +48,7 @@ bash "etclink" do
   not_if { ::File.exists?('/etc/owncloud') }
 end
 
-template '/etc/owncloud/config.php.' do
+template '/etc/owncloud/config.php' do
   source 'config.php.erb'
   owner 'root'
   group 'root'
@@ -66,7 +66,7 @@ template '/etc/owncloud/config.php.' do
     :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
     :other => node['chef-owncloud']['otheroptions']
   })
-  not_if { ::File.exists?('/etc/owncloud/config.php.') }
+  not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
 if node['chef-owncloud']['ssl']['enable']
