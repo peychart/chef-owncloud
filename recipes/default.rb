@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-bash "wget" do
+bash "wgetrepokey" do
   code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
   not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
 end
@@ -37,10 +37,15 @@ template '/etc/apt/sources.list.d/owncloud.list' do
   notifies :run, "execute[apt-get update]", :immediately
 end
 
-%w( owncloud php5-ldap php-apc libreoffice-common ).each do |pack|
+%w( owncloud php5-ldap php-apc libreoffice-common clamav clamav-daemon ).each do |pack|
   package pack do
     action :install
   end
+end
+
+bash "wgetantivirus" do
+  code "wget -O /tmp/files_antivirus.tgz 'https://apps.owncloud.com/CONTENT/content-files/157439-files_antivirus.tar.gz' && cd /var/www/owncloud/apps && tar xzf /tmp/files_antivirus.tgz && chown -R root: /var/www/owncloud/apps/files_antivirus"
+  not_if { ::File.exists?('/var/www/owncloud/apps/files_antivirus') }
 end
 
 bash "etclink" do

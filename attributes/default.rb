@@ -19,4 +19,3 @@ default['chef-owncloud']['dbrootpassword'] = 'secret'
 default['chef-owncloud']['dbname'] = 'owncloud'
 default['chef-owncloud']['dbuser'] = ''
 default['chef-owncloud']['dbpassword'] = 'secret'
-
