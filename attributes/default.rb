@@ -19,3 +19,17 @@ default['chef-owncloud']['dbrootpassword'] = 'secret'
 default['chef-owncloud']['dbname'] = 'owncloud'
 default['chef-owncloud']['dbuser'] = ''
 default['chef-owncloud']['dbpassword'] = 'secret'
+default['chef-owncloud']['crontab'] = {
+  "owncloud"=> {
+    "user"=> "www-data",
+    "minute"=> "*/15",
+    "command"=> "# php -f /var/www/owncloud/cron.php"
+  },
+  "owncloud-dbBackup"=> {
+    "user"=> "root",
+    "weekday"=> "0",
+    "hour"=> "0",
+    "minute"=> "15",
+    "command"=> "mysqldump --lock-tables -h localhost -u root -psecret owncloud > /tmp/owncloud-sqlbkp_$(date +\"%Y%m%d\").bak"
+  }
+}

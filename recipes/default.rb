@@ -124,5 +124,20 @@ quit
 EOF
     EOH
   end if node['chef-owncloud']['dbrootpassword']
+
+  node['chef-owncloud']['crontab'].each do |name, description|
+    cron name do
+      minute  description['minute']
+      hour    description['hour']
+      day     description['day']
+      month   description['month']
+      weekday description['weekday']
+      user    description['user']
+      command description['command']
+      path    description['path']
+      mailto  description['mailto']
+      action :create
+    end
+  end  if node['chef-owncloud']['crontab'] && node['chef-owncloud']['crontab'] != {}
 end
 
