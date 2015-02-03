@@ -30,6 +30,6 @@ default['chef-owncloud']['crontab'] = {
     "weekday"=> "0",
     "hour"=> "0",
     "minute"=> "15",
-    "command"=> "mysqldump --lock-tables -h localhost -u root -psecret owncloud > /tmp/owncloud-sqlbkp_$(date +\"%Y%m%d\").bak"
+    "command"=> "mysqldump --lock-tables -h localhost -u root -psecret owncloud > /tmp/owncloud-sqlbkp_$(date +\"\\%Y\\%m\\%d\").bak"
   }
 }
