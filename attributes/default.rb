@@ -23,7 +23,7 @@ default['chef-owncloud']['crontab'] = {
   "owncloud"=> {
     "user"=> "www-data",
     "minute"=> "*/15",
-    "command"=> "# php -f /var/www/owncloud/cron.php"
+    "command"=> "php -f /var/www/owncloud/cron.php"
   },
   "owncloud-dbBackup"=> {
     "user"=> "root",
