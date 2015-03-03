@@ -18,16 +18,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-bash "wgetrepokey" do
+if node['platform_version'] == '14.04'
+ bash "wgetrepokey" do
   code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
   not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
-end
+ end
 
-execute 'apt-get update' do
-  action :nothing
-end
-
-template '/etc/apt/sources.list.d/owncloud.list' do
+ template '/etc/apt/sources.list.d/owncloud.list' do
   source 'apt.sources.list.erb'
   owner 'root'
   group 'root'
@@ -35,6 +32,11 @@ template '/etc/apt/sources.list.d/owncloud.list' do
   action :create
   not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
   notifies :run, "execute[apt-get update]", :immediately
+ end
+end
+
+execute 'apt-get update' do
+  action :nothing
 end
 
 %w( owncloud php5-ldap php-apc libreoffice-common clamav clamav-daemon ).each do |pack|
@@ -49,7 +51,7 @@ bash "wgetantivirus" do
 end
 
 bash "etclink" do
-  code "if [ -d /var/www/owncloud/config ]; then ln -s /var/www/owncloud/config /etc/owncloud; fi"
+  code "[ -d /var/www/owncloud/config ] && ln -s /var/www/owncloud/config /etc/owncloud"
   not_if { ::File.exists?('/etc/owncloud') }
 end
 
