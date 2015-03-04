@@ -18,6 +18,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# SWAP & DATA partitions:
+include_recipe 'chef-iscsiadm::default'
+include_recipe 'chef-lvm::default'
+include_recipe 'chef-mkswap::default'
+
+# Owncloud install:
 if node['platform_version'] == '14.04'
  bash "wgetrepokey" do
   code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
@@ -127,6 +133,7 @@ EOF
     EOH
   end if node['chef-owncloud']['dbrootpassword']
 
+ # Crontab:
   node['chef-owncloud']['crontab'].each do |name, description|
     cron name do
       minute  description['minute']
@@ -142,4 +149,7 @@ EOF
     end
   end  if node['chef-owncloud']['crontab'] && node['chef-owncloud']['crontab'] != {}
 end
+
+# IPTABLES:
+include_recipe 'chef-iptables::default'
 
