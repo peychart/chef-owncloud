@@ -18,27 +18,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# SWAP & DATA partitions:
-include_recipe 'chef-iscsiadm::default'
-include_recipe 'chef-lvm::default'
-include_recipe 'chef-mkswap::default'
-
 # Owncloud install:
-if node['platform_version'] == '14.04'
- bash "wgetrepokey" do
-  code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
-  not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
- end
+bash "wgetrepokey" do
+ code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
+ not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
+end
 
- template '/etc/apt/sources.list.d/owncloud.list' do
-  source 'apt.sources.list.erb'
-  owner 'root'
-  group 'root'
-  mode '0644'
-  action :create
-  not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
-  notifies :run, "execute[apt-get update]", :immediately
- end
+template '/etc/apt/sources.list.d/owncloud.list' do
+ source 'apt.sources.list.erb'
+ owner 'root'
+ group 'root'
+ mode '0644'
+ action :create
+ not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
+ notifies :run, "execute[apt-get update]", :immediately
 end
 
 execute 'apt-get update' do
@@ -149,7 +142,3 @@ EOF
     end
   end  if node['chef-owncloud']['crontab'] && node['chef-owncloud']['crontab'] != {}
 end
-
-# IPTABLES:
-include_recipe 'chef-iptables::default'
-
