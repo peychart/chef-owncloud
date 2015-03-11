@@ -60,9 +60,9 @@ template '/etc/owncloud/config.php' do
   group 'root'
   mode '0644'
   variables({
-    :instanceid => node['instanceid'],
-    :passwordsalt => node['passwordsalt'],
-    :secret => node['secret'],
+    :instanceid => node['chef-owncloud']['instanceid'],
+    :passwordsalt => node['chef-owncloud']['passwordsalt'],
+    :secret => node['chef-owncloud']['secret'],
     :fqdn => node['fqdn'],
     :datadirectory => node['chef-owncloud']['datadirectory'],
     :forcessl => node['chef-owncloud']['ssl']['force'],
