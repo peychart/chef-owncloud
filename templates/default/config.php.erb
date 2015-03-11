@@ -30,7 +30,7 @@ $CONFIG = array (
   'proxyuserpwd' => '<%=@proxyuserpwd-%>',
 
 <%@other.each do |i|%>
-  <%=i.sub(/,$/, '')-%>,
+  <%=i.sub(/,$/, '')-%><%if not i.sub(/,$/, '').empty?-%>,<%end%>
 <% end %>
 );
 
