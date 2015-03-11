@@ -56,8 +56,8 @@ end
 
 template '/etc/owncloud/config.php' do
   source 'config.php.erb'
-  owner 'root'
-  group 'root'
+  owner 'www-data'
+  group 'www-data'
   mode '0644'
   variables({
     :instanceid => node['chef-owncloud']['instanceid'],

@@ -11,7 +11,7 @@ default['chef-owncloud']['ssl']['force'] = true
 
 default['chef-owncloud']['otheroptions'] = [
   "'enable_avatars' => true",
-  "",
+  ""
   "'appstoreenabled' => false",
   "'blacklisted_files' => array('.htaccess')"
 ]
