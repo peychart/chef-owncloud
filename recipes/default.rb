@@ -18,6 +18,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Provisionning:
+include_recipe 'chef-serviceAttributes::default'
+include_recipe 'chef-iscsiadm::default'
+include_recipe 'chef-lvm::default'
+include_recipe 'chef-mkswap::default'
+
 # Owncloud install:
 bash "wgetrepokey" do
  code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
@@ -145,3 +151,7 @@ EOF
     end
   end  if node['chef-owncloud']['crontab'] && node['chef-owncloud']['crontab'] != {}
 end
+
+# complement IP Rules:
+include_recipe 'chef-iptables::default'
+
