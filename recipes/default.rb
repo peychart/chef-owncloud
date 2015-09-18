@@ -19,10 +19,10 @@
 #
 
 # Provisionning:
-include_recipe 'chef-serviceAttributes::default'
-include_recipe 'chef-iscsiadm::default'
-include_recipe 'chef-lvm::default'
-include_recipe 'chef-mkswap::default'
+#include_recipe 'chef-serviceAttributes::default'
+#include_recipe 'chef-iscsiadm::default'
+#include_recipe 'chef-lvm::default'
+#include_recipe 'chef-mkswap::default'
 
 # Owncloud install:
 bash "wgetrepokey" do
@@ -84,13 +84,19 @@ template '/etc/owncloud/config.php' do
   not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
+node['chef-owncloud']['apache_modules'].each do |i|
+  execute "apache_modules" do
+    command "a2enmod #{i}"
+    user 'root'
+    action :run
+  end
+end
+
 if node['chef-owncloud']['ssl']['enable']
   bash "setssl" do
     code <<-EOH
       a2enmod ssl
       a2ensite default-ssl
-      a2enmod rewrite
-      service apache2 reload
 #      grep -w forcessl /etc/owncloud/config.php| grep -qsw true || ed /etc/owncloud/config.php <<EOF
 #/);
 #i
@@ -100,6 +106,12 @@ if node['chef-owncloud']['ssl']['enable']
 #EOF
     EOH
   end
+end
+
+execute "apache_reload" do
+  command "service apache2 reload"
+  user 'root'
+  action :run
 end
 
 if node['chef-owncloud']['dbtype'] == 'mysql'
@@ -120,7 +132,7 @@ EOF
       while true; do
         mysqladmin shutdown && break
       done
-      service mysql start
+      service mysql start || service mysql restart
     EOH
   end if node['chef-owncloud']['dbrootpassword']
 
@@ -153,5 +165,5 @@ EOF
 end
 
 # complement IP Rules:
-include_recipe 'chef-iptables::default'
+#include_recipe 'chef-iptables::default'
 
