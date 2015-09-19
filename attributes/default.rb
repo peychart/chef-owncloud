@@ -9,6 +9,7 @@ default['chef-owncloud']['apache_modules'] = ['rewrite']
 default['chef-owncloud']['datadirectory'] = '/var/www/owncloud/data'
 default['chef-owncloud']['ssl']['enable'] = true
 default['chef-owncloud']['ssl']['force'] = true
+default['chef-owncloud']['homeURL'] = true
 
 default['chef-owncloud']['otheroptions'] = [
   "'enable_avatars' => true",

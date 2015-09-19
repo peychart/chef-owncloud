@@ -108,6 +108,22 @@ if node['chef-owncloud']['ssl']['enable']
   end
 end
 
+if node['chef-owncloud']['homeURL']
+  bash "ReplaceHomeIndex" do
+    code <<-EOH
+    [ ! -f /var/www/html/index.html.bak ] && mv /var/www/html/index.html /var/www/html/index.html.bak && cat >/var/www/html/index.html <<-EOF
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript"> window.location.href="/owncloud"; </script>
+	<meta http-equiv="refresh" content="0; URL=index.php">
+</head>
+</html>
+EOF
+    EOH
+  end
+end
+
 execute "apache_reload" do
   command "service apache2 reload"
   user 'root'
