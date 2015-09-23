@@ -111,7 +111,7 @@ end
 if node['chef-owncloud']['homeURL']
   bash "ReplaceHomeIndex" do
     code <<-EOH
-    [ ! -f /var/www/html/index.html.bak ] && mv /var/www/html/index.html /var/www/html/index.html.bak && cat >/var/www/html/index.html <<-EOF
+    [ -f /var/www/html/index.html.bak ] || (mv /var/www/html/index.html /var/www/html/index.html.bak && cat >/var/www/html/index.html) <<-EOF
 <!DOCTYPE html>
 <html>
 <head>
