@@ -18,11 +18,12 @@ default['chef-owncloud']['otheroptions'] = [
   "'blacklisted_files' => array('.htaccess')"
 ]
 
-default['chef-owncloud']['dbhost'] = '127.0.0.1'
+default['chef-owncloud']['dbhost'] = 'localhost'
 default['chef-owncloud']['dbtype'] = 'mysql'
+default['chef-owncloud']['dbtableprefix'] = 'oc_'
 default['chef-owncloud']['dbrootpassword'] = 'secret'
 default['chef-owncloud']['dbname'] = 'owncloud'
-default['chef-owncloud']['dbuser'] = ''
+default['chef-owncloud']['dbuser'] = 'admin'
 default['chef-owncloud']['dbpassword'] = 'secret'
 default['chef-owncloud']['crontab'] = {
   "owncloud"=> {

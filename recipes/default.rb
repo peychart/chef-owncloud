@@ -27,7 +27,7 @@
 # Owncloud install:
 bash "wgetrepokey" do
  code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
- not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
+# not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
 end
 
 template '/etc/apt/sources.list.d/owncloud.list' do
@@ -58,6 +58,23 @@ end
 bash "etclink" do
   code "[ -d /var/www/owncloud/config ] && ln -s /var/www/owncloud/config /etc/owncloud"
   not_if { ::File.exists?('/etc/owncloud') }
+end
+
+template '/etc/owncloud/autoconfig.php' do
+  source 'autoconfig.php.erb'
+  owner 'www-data'
+  group 'www-data'
+  mode '0644'
+  variables({
+    :datadirectory => node['chef-owncloud']['datadirectory'],
+    :dbtype => node['chef-owncloud']['dbtype'],
+    :dbtableprefix => node['chef-owncloud']['dbtableprefix'],
+    :dbname => node['chef-owncloud']['dbname'],
+    :dbuser => node['chef-owncloud']['dbuser'],
+    :dbpass => node['chef-owncloud']['dbpassword'],
+    :dbhost => node['chef-owncloud']['dbhost'],
+    :dbtableprefix => node['chef-owncloud']['dbtableprefix']
+  })
 end
 
 template '/etc/owncloud/config.php' do
@@ -134,7 +151,7 @@ if node['chef-owncloud']['dbtype'] == 'mysql'
   bash 'mysqlInitPassword' do
     code <<-EOH
       while true; do
-        service mysql stop && break
+        service mysql stop && break; sleep 1
       done
       mysqld_safe --skip-grant-tables &
       sleep 2
@@ -146,7 +163,7 @@ WHERE  USER = 'root' AND host = 'localhost';
 quit
 EOF
       while true; do
-        mysqladmin shutdown && break
+        mysqladmin shutdown && break; sleep 1
       done
       service mysql start || service mysql restart
     EOH
