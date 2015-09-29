@@ -10,24 +10,16 @@ $CONFIG = array (
    array (
     0 => '<%=@fqdn-%>',
    ),
-  'datadirectory' => '<%=@datadirectory-%>',
 <% if @forcessl %>
   'overwrite.cli.url' => 'https://<%=@fqdn-%>/owncloud',
 <% else %>
   'overwrite.cli.url' => 'http://<%=@fqdn-%>/owncloud',
 <% end %>
-  'dbtype' => '<%=@dbtype-%>',
-  'version' => '',
-  'dbname' => '<%=@dbname-%>',
-  'dbhost' => '<%=@dbhost-%>',
-  'dbtableprefix' => '<%=@dbtableprefix-%>',
-  'dbuser' => '<%=@dbuser-%>',
   'dbpassword' => '<%=@dbpassword-%>',
   'installed' => false,
   'default_language' => '<%=@language-%>',
   'forcessl' => <%=@forcessl-%>,
   'proxy' => '<%=@proxy-%>',
-  'proxyuserpwd' => '<%=@proxyuserpwd-%>',
 
 <%@other.each do |i|%>
   <%=i.sub(/,$/, '')-%><%if not i.sub(/,$/, '').empty?-%>,<%end%>

@@ -10,6 +10,7 @@ default['chef-owncloud']['datadirectory'] = '/var/www/owncloud/data'
 default['chef-owncloud']['ssl']['enable'] = true
 default['chef-owncloud']['ssl']['force'] = true
 default['chef-owncloud']['homeURL'] = true
+default['chef-owncloud']['proxy'] = ''
 
 default['chef-owncloud']['otheroptions'] = [
   "'enable_avatars' => true",
@@ -36,6 +37,6 @@ default['chef-owncloud']['crontab'] = {
     "weekday"=> "0",
     "hour"=> "0",
     "minute"=> "15",
-    "command"=> "mysqldump --lock-tables -h localhost -u root -psecret owncloud > /tmp/owncloud-sqlbkp_$(date +\"\\%Y\\%m\\%d\").bak"
+    "command"=> "prefix=/var/www/owncloud/data/updater_backup; sufix=_$(date +\"\\%Y\\%m\\%d-\\%H\\%M\\%S\"); mysqldump --lock-tables -h localhost -u root -psecret owncloud >\$prefix/owncloud-sqlbkp\$sufix.dump && cp /var/www/owncloud/config/config.php \$prefix/config\$sufix.php; find \$prefix -type f -exec chmod 400 {} \\;"
   }
 }

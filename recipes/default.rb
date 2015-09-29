@@ -30,6 +30,10 @@ bash "wgetrepokey" do
 # not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
 end
 
+execute 'apt-get update' do
+  action :nothing
+end
+
 template '/etc/apt/sources.list.d/owncloud.list' do
  source 'apt.sources.list.erb'
  owner 'root'
@@ -40,11 +44,7 @@ template '/etc/apt/sources.list.d/owncloud.list' do
  notifies :run, "execute[apt-get update]", :immediately
 end
 
-execute 'apt-get update' do
-  action :nothing
-end
-
-%w( owncloud php5-ldap php-apc libreoffice-common clamav clamav-daemon ).each do |pack|
+%w( apache2 php5-ldap libreoffice-common clamav clamav-daemon php-apc owncloud ).each do |pack|
   package pack do
     action :install
   end
@@ -56,7 +56,7 @@ bash "wgetantivirus" do
 end
 
 bash "etclink" do
-  code "[ -d /var/www/owncloud/config ] && ln -s /var/www/owncloud/config /etc/owncloud"
+  code "[ -d /var/www/owncloud/config ] && ln -s /var/www/owncloud/config /etc/owncloud; [ 0$(wc -l </var/www/owncloud/config/config.php) -lt 6 ] && rm /var/www/owncloud/config/config.php"
   not_if { ::File.exists?('/etc/owncloud') }
 end
 
@@ -68,13 +68,13 @@ template '/etc/owncloud/autoconfig.php' do
   variables({
     :datadirectory => node['chef-owncloud']['datadirectory'],
     :dbtype => node['chef-owncloud']['dbtype'],
-    :dbtableprefix => node['chef-owncloud']['dbtableprefix'],
     :dbname => node['chef-owncloud']['dbname'],
     :dbuser => node['chef-owncloud']['dbuser'],
     :dbpass => node['chef-owncloud']['dbpassword'],
     :dbhost => node['chef-owncloud']['dbhost'],
     :dbtableprefix => node['chef-owncloud']['dbtableprefix']
   })
+  not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
 template '/etc/owncloud/config.php' do
@@ -87,15 +87,10 @@ template '/etc/owncloud/config.php' do
     :passwordsalt => node['chef-owncloud']['passwordsalt'],
     :secret => node['chef-owncloud']['secret'],
     :fqdn => node['fqdn'],
-    :datadirectory => node['chef-owncloud']['datadirectory'],
     :forcessl => node['chef-owncloud']['ssl']['force'],
-    :dbtype => node['chef-owncloud']['dbtype'],
-    :dbhost => node['chef-owncloud']['dbhost'],
-    :dbname => node['chef-owncloud']['dbname'],
-    :dbuser => (node['chef-owncloud']['dbuser'] ? node['chef-owncloud']['dbuser'] : ''),
-    :dbpassword => node['chef-owncloud']['dbpassword'],
     :language => node['chef-owncloud']['default_language'],
     :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
+    :proxy => node['chef-owncloud']['proxy'],
     :other => node['chef-owncloud']['otheroptions']
   })
   not_if { ::File.exists?('/etc/owncloud/config.php') }
