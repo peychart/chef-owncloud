@@ -65,8 +65,9 @@ template '/etc/owncloud/autoconfig.php' do
   owner 'www-data'
   group 'www-data'
   mode '0644'
+  directory = node['chef-owncloud']['directory'].gsub(/\/$/, '')
   variables({
-    :datadirectory => node['chef-owncloud']['datadirectory'],
+    :datadirectory => "#{directory}/data",
     :dbtype => node['chef-owncloud']['dbtype'],
     :dbname => node['chef-owncloud']['dbname'],
     :dbuser => node['chef-owncloud']['dbuser'],
@@ -120,26 +121,33 @@ if node['chef-owncloud']['ssl']['enable']
   end
 end
 
-if node['chef-owncloud']['homeURL']
-  bash "ReplaceHomeIndex" do
-    code <<-EOH
-    [ -f /var/www/html/index.html.bak ] || (mv /var/www/html/index.html /var/www/html/index.html.bak && cat >/var/www/html/index.html) <<-EOF
-<!DOCTYPE html>
-<html>
-<head>
-	<script type="text/javascript"> window.location.href="/owncloud"; </script>
-	<meta http-equiv="refresh" content="0; URL=index.php">
-</head>
-</html>
-EOF
-    EOH
-  end
+template '/etc/apache2/sites-available/owncloud.conf' do
+  source 'owncloud.conf.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables({
+    :ip => node['ipaddress'],
+    :enableSSL => node['chef-owncloud']['ssl']['enable'],
+    :forceSSL => node['chef-owncloud']['ssl']['force'],
+    :email => node['chef-owncloud']['email'],
+    :serverName => node['chef-owncloud']['serverName'],
+    :serverAliases => node['chef-owncloud']['serverAliases'],
+    :directory => node['chef-owncloud']['directory']
+  })
+end
+
+execute "apache_enable_owncloud" do
+  command "a2ensite owncloud"
+  user 'root'
+  action :run
 end
 
 execute "apache_reload" do
   command "service apache2 reload"
   user 'root'
   action :run
+  not_if { ::File.exists?('/etc/apache2/sites-enabled/owncloud.conf') }
 end
 
 if node['chef-owncloud']['dbtype'] == 'mysql'
