@@ -8,6 +8,7 @@ default['chef-owncloud']['secret'] = '5c5e498b7f1b079962a77972b8f0d0c1b6dbb99700
 default['chef-owncloud']['apache_modules'] = ['rewrite']
 default['chef-owncloud']['serverName'] = node['fqdn']
 default['chef-owncloud']['directory'] = '/var/www/owncloud'
+default['chef-owncloud']['serverAliases'] = []
 default['chef-owncloud']['ssl']['enable'] = true
 default['chef-owncloud']['ssl']['force'] = true
 default['chef-owncloud']['homeURL'] = true

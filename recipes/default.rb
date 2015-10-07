@@ -56,8 +56,7 @@ bash "wgetantivirus" do
 end
 
 bash "etclink" do
-  code "[ -d /var/www/owncloud/config ] && ln -s /var/www/owncloud/config /etc/owncloud; [ 0$(wc -l </var/www/owncloud/config/config.php) -lt 6 ] && rm /var/www/owncloud/config/config.php"
-  not_if { ::File.exists?('/etc/owncloud') }
+  code "[ -d /etc/owncloud ] || ln -s /var/www/owncloud/config /etc/owncloud; [ 0$(wc -l </var/www/owncloud/config/config.php) -gt 6 ] || rm -f /var/www/owncloud/config/config.php"
 end
 
 template '/etc/owncloud/autoconfig.php' do
@@ -88,6 +87,7 @@ template '/etc/owncloud/config.php' do
     :passwordsalt => node['chef-owncloud']['passwordsalt'],
     :secret => node['chef-owncloud']['secret'],
     :fqdn => node['fqdn'],
+    :trustedDomains => node['chef-owncloud']['serverAliases'],
     :forcessl => node['chef-owncloud']['ssl']['force'],
     :language => node['chef-owncloud']['default_language'],
     :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
