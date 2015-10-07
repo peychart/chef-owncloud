@@ -1,10 +1,19 @@
 <?php
 $AUTOCONFIG = array(
+  "passwordsalt"  => "<%=@passwordsalt-%>",
   "datadirectory" => "<%=@datadirectory-%>",
+  "trusted_domains" => 
+   array (
+    0 => "<%=node['fqdn']-%>",
+<% i=1;((@trustedDomains.is_a? Array) ? @trustedDomains : Array[@trustedDomains]).each do |dom| %>
+    <%=i-%> => "<%=dom-%>",
+<% i += 1; end %>
+   ),
   "dbtype"        => "<%=@dbtype-%>",
   "dbname"        => "<%=@dbname-%>",
   "dbuser"        => "<%=@dbuser-%>",
-  "dbpass"        => "<%=@dbpass-%>",
+  "dbpassword"    => "<%=@dbpassword-%>",
   "dbhost"        => "<%=@dbhost-%>",
   "dbtableprefix" => "<%=@dbtableprefix-%>",
+
 );

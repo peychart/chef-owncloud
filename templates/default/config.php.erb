@@ -3,22 +3,12 @@
  * See: config.sample.php
  */
 $CONFIG = array (
-  'instanceid' => '<%=@instanceid-%>',
-  'passwordsalt' => '<%=@passwordsalt-%>',
-  'secret' => '<%=@secret-%>',
-  'trusted_domains' => 
-   array (
-    0 => '<%=@fqdn-%>',
-<% i=1;((@trustedDomains.is_a? Array) ? @trustedDomains : Array[@trustedDomains]).each do |dom| %>
-    <%=i-%> => '<%=dom-%>',
-<% i += 1; end %>
-   ),
+  'instanceid'  => '<%=@instanceid-%>',
 <% if @forcessl %>
   'overwrite.cli.url' => 'https://<%=@fqdn-%>/owncloud',
 <% else %>
   'overwrite.cli.url' => 'http://<%=@fqdn-%>/owncloud',
 <% end %>
-  'dbpassword' => '<%=@dbpassword-%>',
   'installed' => false,
   'default_language' => '<%=@language-%>',
   'forcessl' => <%=@forcessl-%>,

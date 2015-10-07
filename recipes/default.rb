@@ -66,15 +66,17 @@ template '/etc/owncloud/autoconfig.php' do
   mode '0644'
   directory = node['chef-owncloud']['directory'].gsub(/\/$/, '')
   variables({
+    :passwordsalt => node['chef-owncloud']['passwordsalt'],
     :datadirectory => "#{directory}/data",
+    :trustedDomains => node['chef-owncloud']['serverAliases'],
     :dbtype => node['chef-owncloud']['dbtype'],
     :dbname => node['chef-owncloud']['dbname'],
     :dbuser => node['chef-owncloud']['dbuser'],
-    :dbpass => node['chef-owncloud']['dbpassword'],
+    :dbpassword => node['chef-owncloud']['dbpassword'],
     :dbhost => node['chef-owncloud']['dbhost'],
-    :dbtableprefix => node['chef-owncloud']['dbtableprefix']
+    :dbtableprefix => node['chef-owncloud']['dbtableprefix'],
   })
-  not_if { ::File.exists?('/etc/owncloud/config.php') }
+  #not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
 template '/etc/owncloud/config.php' do
@@ -84,10 +86,7 @@ template '/etc/owncloud/config.php' do
   mode '0644'
   variables({
     :instanceid => node['chef-owncloud']['instanceid'],
-    :passwordsalt => node['chef-owncloud']['passwordsalt'],
-    :secret => node['chef-owncloud']['secret'],
     :fqdn => node['fqdn'],
-    :trustedDomains => node['chef-owncloud']['serverAliases'],
     :forcessl => node['chef-owncloud']['ssl']['force'],
     :language => node['chef-owncloud']['default_language'],
     :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
