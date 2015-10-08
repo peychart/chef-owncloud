@@ -40,23 +40,28 @@ template '/etc/apt/sources.list.d/owncloud.list' do
  group 'root'
  mode '0644'
  action :create
+ variables({
+   :version => node['platform_version']
+ })
  not_if { ::File.exists?('/etc/apt/sources.list.d/owncloud.list') }
  notifies :run, "execute[apt-get update]", :immediately
 end
 
-%w( apache2 php5-ldap libreoffice-common clamav clamav-daemon php-apc owncloud ).each do |pack|
+%w( apache2 php5-ldap libreoffice-common clamav clamav-daemon php-apc php5-apcu owncloud ).each do |pack|
   package pack do
     action :install
   end
 end
 
+directory = node['chef-owncloud']['directory'].gsub(/\/$/, '')
+
 bash "wgetantivirus" do
-  code "wget -O /tmp/files_antivirus.tgz 'https://apps.owncloud.com/CONTENT/content-files/157439-files_antivirus.tar.gz' && cd /var/www/owncloud/apps && tar xzf /tmp/files_antivirus.tgz && chown -R root: /var/www/owncloud/apps/files_antivirus"
-  not_if { ::File.exists?('/var/www/owncloud/apps/files_antivirus') }
+  code "wget -O /tmp/files_antivirus.tgz 'https://apps.owncloud.com/CONTENT/content-files/157439-files_antivirus.tar.gz' && cd #{directory}/apps && tar xzf /tmp/files_antivirus.tgz && chown -R root: #{directory}/apps/files_antivirus"
+  not_if { ::File.exists?("#{directory}/apps/files_antivirus") }
 end
 
 bash "etclink" do
-  code "[ -d /etc/owncloud ] || ln -s /var/www/owncloud/config /etc/owncloud; [ 0$(wc -l </var/www/owncloud/config/config.php) -gt 6 ] || rm -f /var/www/owncloud/config/config.php"
+  code "[ -d /etc/owncloud ] || ln -s #{directory}/config /etc/owncloud; [ 0$(wc -l <#{directory}/config/config.php) -gt 6 ] || rm -f #{directory}/config/config.php"
 end
 
 template '/etc/owncloud/autoconfig.php' do
@@ -64,7 +69,6 @@ template '/etc/owncloud/autoconfig.php' do
   owner 'www-data'
   group 'www-data'
   mode '0644'
-  directory = node['chef-owncloud']['directory'].gsub(/\/$/, '')
   variables({
     :passwordsalt => node['chef-owncloud']['passwordsalt'],
     :datadirectory => "#{directory}/data",
@@ -76,7 +80,7 @@ template '/etc/owncloud/autoconfig.php' do
     :dbhost => node['chef-owncloud']['dbhost'],
     :dbtableprefix => node['chef-owncloud']['dbtableprefix'],
   })
-  #not_if { ::File.exists?('/etc/owncloud/config.php') }
+  not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
 template '/etc/owncloud/config.php' do
@@ -132,7 +136,7 @@ template '/etc/apache2/sites-available/owncloud.conf' do
     :email => node['chef-owncloud']['email'],
     :serverName => node['chef-owncloud']['serverName'],
     :serverAliases => node['chef-owncloud']['serverAliases'],
-    :directory => node['chef-owncloud']['directory']
+    :directory => directory
   })
 end
 
