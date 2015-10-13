@@ -150,7 +150,6 @@ if getNodeAttr('ssl')['enable']
   end
 end
 
-ipaddress             = getNodeAttr('ipaddress')
 enableSSL             = getNodeAttr('ssl')['enable']
 forceSSL              = getNodeAttr('ssl')['force']
 email                 = getNodeAttr('email')
@@ -164,7 +163,7 @@ template '/etc/apache2/sites-available/owncloud.conf' do
   group 'root'
   mode '0644'
   variables({
-    :ip                    => ipaddress,
+    :ip                    => node[:ipaddress],
     :enableSSL             => enableSSL,
     :forceSSL              => forceSSL,
     :email                 => email,
