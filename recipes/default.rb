@@ -24,6 +24,8 @@
 #include_recipe 'chef-lvm::default'
 #include_recipe 'chef-mkswap::default'
 
+directory = node['chef-owncloud']['directory'].gsub(/\/$/, '')
+
 # Owncloud install:
 bash "wgetrepokey" do
  code "wget -O /tmp/Release.key http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_#{node['platform_version']}/Release.key && apt-key add - < /tmp/Release.key"
@@ -53,8 +55,6 @@ end
   end
 end
 
-directory = node['chef-owncloud']['directory'].gsub(/\/$/, '')
-
 bash "wgetantivirus" do
   code "wget -O /tmp/files_antivirus.tgz 'https://apps.owncloud.com/CONTENT/content-files/157439-files_antivirus.tar.gz' && cd #{directory}/apps && tar xzf /tmp/files_antivirus.tgz && chown -R root: #{directory}/apps/files_antivirus"
   not_if { ::File.exists?("#{directory}/apps/files_antivirus") }
@@ -64,6 +64,7 @@ bash "etclink" do
   code "[ -d /etc/owncloud ] || ln -s #{directory}/config /etc/owncloud; [ 0$(wc -l <#{directory}/config/config.php) -gt 6 ] || rm -f #{directory}/config/config.php"
 end
 
+#configuring owncloud:
 template '/etc/owncloud/autoconfig.php' do
   source 'autoconfig.php.erb'
   owner 'www-data'
@@ -73,12 +74,14 @@ template '/etc/owncloud/autoconfig.php' do
     :passwordsalt => node['chef-owncloud']['passwordsalt'],
     :datadirectory => "#{directory}/data",
     :trustedDomains => node['chef-owncloud']['serverAliases'],
+    :overwritewebroot => node['chef-owncloud']['overwritewebroot'],
+    :fqdn => node['fqdn'],
     :dbtype => node['chef-owncloud']['dbtype'],
     :dbname => node['chef-owncloud']['dbname'],
     :dbuser => node['chef-owncloud']['dbuser'],
     :dbpassword => node['chef-owncloud']['dbpassword'],
     :dbhost => node['chef-owncloud']['dbhost'],
-    :dbtableprefix => node['chef-owncloud']['dbtableprefix'],
+    :dbtableprefix => node['chef-owncloud']['dbtableprefix']
   })
   not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
@@ -90,16 +93,18 @@ template '/etc/owncloud/config.php' do
   mode '0644'
   variables({
     :instanceid => node['chef-owncloud']['instanceid'],
-    :fqdn => node['fqdn'],
     :forcessl => node['chef-owncloud']['ssl']['force'],
-    :language => node['chef-owncloud']['default_language'],
+    :overwritewebroot => node['chef-owncloud']['overwritewebroot'],
     :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
     :proxy => node['chef-owncloud']['proxy'],
+    :objectstore => node['chef-owncloud']['objectstore'],
+    :language => node['chef-owncloud']['default_language'],
     :other => node['chef-owncloud']['otheroptions']
   })
   not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
+# configuring apache2:
 node['chef-owncloud']['apache_modules'].each do |i|
   execute "apache_modules" do
     command "a2enmod #{i}"
@@ -135,8 +140,9 @@ template '/etc/apache2/sites-available/owncloud.conf' do
     :forceSSL => node['chef-owncloud']['ssl']['force'],
     :email => node['chef-owncloud']['email'],
     :serverName => node['chef-owncloud']['serverName'],
-    :serverAliases => node['chef-owncloud']['serverAliases'],
-    :directory => directory
+    :directory => directory,
+    :SSLCertificateFile => node['chef-owncloud']['SSLCertificateFile'],
+    :SSLCertificateKeyFile => node['chef-owncloud']['SSLCertificateKeyFile']
   })
 end
 
@@ -150,9 +156,10 @@ execute "apache_reload" do
   command "service apache2 reload"
   user 'root'
   action :run
-  not_if { ::File.exists?('/etc/apache2/sites-enabled/owncloud.conf') }
+  #not_if { ::File.exists?('/etc/apache2/sites-enabled/owncloud.conf') }
 end
 
+# Reset database password:
 if node['chef-owncloud']['dbtype'] == 'mysql'
   bash 'mysqlInitPassword' do
     code <<-EOH

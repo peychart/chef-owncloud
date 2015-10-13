@@ -4,15 +4,23 @@
  */
 $CONFIG = array (
   'instanceid'  => '<%=@instanceid-%>',
-<% if @forcessl %>
-  'overwrite.cli.url' => 'https://<%=@fqdn-%>/owncloud',
-<% else %>
-  'overwrite.cli.url' => 'http://<%=@fqdn-%>/owncloud',
-<% end %>
   'installed' => false,
-  'default_language' => '<%=@language-%>',
+<% if @overwritewebroot && @overwritewebroot != '' -%>
+  'overwritewebroot' => '<%=@overwritewebroot-%>',
+<% end -%>
   'forcessl' => <%=@forcessl-%>,
   'proxy' => '<%=@proxy-%>',
+<% if @objectstore && @objectstore!={} %>
+  'objectstore' => array(
+    'class' => '<%=@objectstore[:class]%>',
+      'arguments' => array(
+<% @objectstore[:arguments].each do |arg| %>
+        <%= arg %>
+<% end %>
+      ),
+  ),
+<% end -%>
+  'default_language' => '<%=@language-%>',
 
 <%@other.each do |i|%>
   <%=i.sub(/,$/, '')-%><%if not i.sub(/,$/, '').empty?-%>,<%end%>

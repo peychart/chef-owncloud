@@ -2,6 +2,9 @@
 $AUTOCONFIG = array(
   "passwordsalt"  => "<%=@passwordsalt-%>",
   "datadirectory" => "<%=@datadirectory-%>",
+<% if @overwritewebroot && @overwritewebroot != '' -%>
+  "overwritewebroot" => "<%=@overwritewebroot-%>",
+<% end -%>
   "trusted_domains" => 
    array (
     0 => "<%=node['fqdn']-%>",
@@ -15,5 +18,4 @@ $AUTOCONFIG = array(
   "dbpassword"    => "<%=@dbpassword-%>",
   "dbhost"        => "<%=@dbhost-%>",
   "dbtableprefix" => "<%=@dbtableprefix-%>",
-
 );

@@ -1,12 +1,9 @@
 <VirtualHost <%=@ip-%>:80 >
     ServerAdmin <%=@email%>
     ServerName <%=@serverName%>
- <% ((@serverAliases.is_a? Array) ? @serverAliases : Array[@serverAliases]).each do |serverAlias| %>
-    ServerAlias <%=serverAlias%>
- <% end %>
 
     DocumentRoot <%=@directory%>
-    Alias /owncloud <%=@directory%>
+
     <Directory <%=@directory%>>
         Options +FollowSymLinks
         AllowOverride All
@@ -31,13 +28,10 @@
  <VirtualHost <%=@ip-%>:443 >
     ServerAdmin <%=@email%>
     ServerName <%=@serverName%>
- <% ((@serverAliases.is_a? Array) ? @serverAliases : Array[@serverAliases]).each do |serverAlias| -%>
-    ServerAlias <%=serverAlias%>
- <% end %>
     Header always add Strict-Transport-Security "max-age=15768000"
 
     DocumentRoot <%=@directory%>
-    Alias /owncloud <%=@directory%>
+
     <Directory <%=@directory%>>
         Options +FollowSymLinks
         AllowOverride All
@@ -50,8 +44,16 @@
     CustomLog ${APACHE_LOG_DIR}/owncloud-access.log combined
 
     SSLEngine on
+<% if @SSLCertificateFile && @SSLCertificateFile != '' %>
+    SSLCertificateFile       <%= @SSLCertificateFile %>
+<% else %>
     SSLCertificateFile       /etc/ssl/certs/ssl-cert-snakeoil.pem
+<% end %>
+<% if @SSLCertificateKeyFile && @SSLCertificateKeyFile != '' %>
+    SSLCertificateKeyFile       <%= @SSLCertificateKeyFile %>
+<% else %>
     SSLCertificateKeyFile    /etc/ssl/private/ssl-cert-snakeoil.key
+<% end %>
     #SSLCertificateChainFile  /etc/apache2/ssl.crt/server-ca.crt
     #SSLCACertificatePath     /etc/ssl/certs/
     #SSLCACertificateFile     /etc/apache2/ssl.crt/ca-bundle.crt
