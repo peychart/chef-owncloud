@@ -17,14 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+def getNodeAttr( name )
+  if (node['chef-owncloud'][ node[:domain] ] && node['chef-owncloud'][ node[:domain] ][name] )
+    node['chef-owncloud'][ node[:domain] ][name]
+  elsif (node['chef-owncloud'][ node[:fqdn] ] && node['chef-owncloud'][ node[:fqdn] ][name] )
+    node['chef-owncloud'][ node[:fqdn] ][name]
+  else
+    node['chef-owncloud'][name]
+  end
+end
 
-# Provisionning:
-#include_recipe 'chef-serviceAttributes::default'
-#include_recipe 'chef-iscsiadm::default'
-#include_recipe 'chef-lvm::default'
-#include_recipe 'chef-mkswap::default'
-
-directory = node['chef-owncloud']['directory'].gsub(/\/$/, '')
+directory = getNodeAttr('directory').gsub(/\/$/, '')
 
 # Owncloud install:
 bash "wgetrepokey" do
@@ -65,26 +68,45 @@ bash "etclink" do
 end
 
 #configuring owncloud:
+passwordsalt     = getNodeAttr('passwordsalt')
+trustedDomains   = getNodeAttr('serverAliases')
+overwritewebroot = getNodeAttr('overwritewebroot')
+dbtype           = getNodeAttr('dbtype')
+dbname           = getNodeAttr('dbname')
+dbuser           = getNodeAttr('dbuser')
+dbpassword       = getNodeAttr('dbpassword')
+dbhost           = getNodeAttr('dbhost')
+dbtableprefix    = getNodeAttr('dbtableprefix')
+
 template '/etc/owncloud/autoconfig.php' do
   source 'autoconfig.php.erb'
   owner 'www-data'
   group 'www-data'
   mode '0644'
   variables({
-    :passwordsalt => node['chef-owncloud']['passwordsalt'],
-    :datadirectory => "#{directory}/data",
-    :trustedDomains => node['chef-owncloud']['serverAliases'],
-    :overwritewebroot => node['chef-owncloud']['overwritewebroot'],
-    :fqdn => node['fqdn'],
-    :dbtype => node['chef-owncloud']['dbtype'],
-    :dbname => node['chef-owncloud']['dbname'],
-    :dbuser => node['chef-owncloud']['dbuser'],
-    :dbpassword => node['chef-owncloud']['dbpassword'],
-    :dbhost => node['chef-owncloud']['dbhost'],
-    :dbtableprefix => node['chef-owncloud']['dbtableprefix']
+    :passwordsalt     => passwordsalt,
+    :datadirectory    => "#{directory}/data",
+    :trustedDomains   => trustedDomains,
+    :overwritewebroot => overwritewebroot,
+    :fqdn             => node['fqdn'],
+    :dbtype           => dbtype,
+    :dbname           => dbname,
+    :dbuser           => dbuser,
+    :dbpassword       => dbpassword,
+    :dbhost           => dbhost,
+    :dbtableprefix    => dbtableprefix
   })
   not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
+
+# config.php:
+instanceid       = getNodeAttr('instanceid')
+overwritewebroot = getNodeAttr('overwritewebroot')
+forcessl         = (getNodeAttr('ssl')['enable'] ? getNodeAttr('ssl')['force'] : false)
+proxy            = getNodeAttr('proxy')
+objectstore      = getNodeAttr('objectstore')
+language         = getNodeAttr('default_language')
+otheroptions     = getNodeAttr('otheroptions')
 
 template '/etc/owncloud/config.php' do
   source 'config.php.erb'
@@ -92,20 +114,19 @@ template '/etc/owncloud/config.php' do
   group 'www-data'
   mode '0644'
   variables({
-    :instanceid => node['chef-owncloud']['instanceid'],
-    :forcessl => node['chef-owncloud']['ssl']['force'],
-    :overwritewebroot => node['chef-owncloud']['overwritewebroot'],
-    :forcessl => (node['chef-owncloud']['ssl']['enable'] ? node['chef-owncloud']['ssl']['force'] : false),
-    :proxy => node['chef-owncloud']['proxy'],
-    :objectstore => node['chef-owncloud']['objectstore'],
-    :language => node['chef-owncloud']['default_language'],
-    :other => node['chef-owncloud']['otheroptions']
+    :instanceid       => instanceid,
+    :overwritewebroot => overwritewebroot,
+    :forcessl         => forcessl,
+    :proxy            => proxy,
+    :objectstore      => objectstore,
+    :language         => language,
+    :other            => otheroptions
   })
   not_if { ::File.exists?('/etc/owncloud/config.php') }
 end
 
 # configuring apache2:
-node['chef-owncloud']['apache_modules'].each do |i|
+getNodeAttr('apache_modules').each do |i|
   execute "apache_modules" do
     command "a2enmod #{i}"
     user 'root'
@@ -113,7 +134,7 @@ node['chef-owncloud']['apache_modules'].each do |i|
   end
 end
 
-if node['chef-owncloud']['ssl']['enable']
+if getNodeAttr('ssl')['enable']
   bash "setssl" do
     code <<-EOH
       a2enmod ssl
@@ -129,20 +150,28 @@ if node['chef-owncloud']['ssl']['enable']
   end
 end
 
+ipaddress             = getNodeAttr('ipaddress')
+enableSSL             = getNodeAttr('ssl')['enable']
+forceSSL              = getNodeAttr('ssl')['force']
+email                 = getNodeAttr('email')
+serverName            = getNodeAttr('serverName')
+sslCertificateFile    = getNodeAttr('SSLCertificateFile')
+sslCertificateKeyFile = getNodeAttr('SSLCertificateKeyFile')
+
 template '/etc/apache2/sites-available/owncloud.conf' do
   source 'owncloud.conf.erb'
   owner 'root'
   group 'root'
   mode '0644'
   variables({
-    :ip => node['ipaddress'],
-    :enableSSL => node['chef-owncloud']['ssl']['enable'],
-    :forceSSL => node['chef-owncloud']['ssl']['force'],
-    :email => node['chef-owncloud']['email'],
-    :serverName => node['chef-owncloud']['serverName'],
-    :directory => directory,
-    :SSLCertificateFile => node['chef-owncloud']['SSLCertificateFile'],
-    :SSLCertificateKeyFile => node['chef-owncloud']['SSLCertificateKeyFile']
+    :ip                    => ipaddress,
+    :enableSSL             => enableSSL,
+    :forceSSL              => forceSSL,
+    :email                 => email,
+    :serverName            => serverName,
+    :directory             => directory,
+    :SSLCertificateFile    => sslCertificateFile,
+    :SSLCertificateKeyFile => sslCertificateKeyFile
   })
 end
 
@@ -160,7 +189,9 @@ execute "apache_reload" do
 end
 
 # Reset database password:
-if node['chef-owncloud']['dbtype'] == 'mysql'
+if getNodeAttr('dbtype') == 'mysql'
+
+  dbrootpassword = getNodeAttr('dbrootpassword')
   bash 'mysqlInitPassword' do
     code <<-EOH
       while true; do
@@ -171,7 +202,7 @@ if node['chef-owncloud']['dbtype'] == 'mysql'
       mysql -h localhost <<EOF
 USE mysql
 UPDATE user
-SET password = password(\'#{node['chef-owncloud']['dbrootpassword']}\')
+SET password = password(\'#{dbrootpassword}\')
 WHERE  USER = 'root' AND host = 'localhost';
 quit
 EOF
@@ -180,21 +211,23 @@ EOF
       done
       service mysql start || service mysql restart
     EOH
-  end if node['chef-owncloud']['dbrootpassword']
+  end if getNodeAttr('dbrootpassword')
 
+  dbname     = getNodeAttr('dbname')
+  dbpassword = getNodeAttr('dbpassword')
   bash 'createDatabase' do
     code <<-EOH
-      mysql -u root -p#{node['chef-owncloud']['dbrootpassword']} <<EOF
+      mysql -u root -p#{dbrootpassword} <<EOF
 USE mysql
 CREATE DATABASE IF NOT EXISTS owncloud;
-GRANT ALL PRIVILEGES ON owncloud.* TO \'#{node['chef-owncloud']['dbname']}\'@'localhost' IDENTIFIED BY \'#{node['chef-owncloud']['dbpassword']}\';
+GRANT ALL PRIVILEGES ON owncloud.* TO \'#{dbname}\'@'localhost' IDENTIFIED BY \'#{dbpassword}\';
 quit
 EOF
     EOH
-  end if node['chef-owncloud']['dbrootpassword']
+  end if getNodeAttr('dbrootpassword')
 
  # Crontab:
-  node['chef-owncloud']['crontab'].each do |name, description|
+  getNodeAttr('crontab').each do |name, description|
     cron name do
       minute  description['minute']
       hour    description['hour']
@@ -207,7 +240,7 @@ EOF
       mailto  description['mailto']
       action :create
     end
-  end  if node['chef-owncloud']['crontab'] && node['chef-owncloud']['crontab'] != {}
+  end  if getNodeAttr('crontab') && getNodeAttr('crontab') != {}
 end
 
 # complement IP Rules:
