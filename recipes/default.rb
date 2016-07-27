@@ -138,6 +138,7 @@ if getNodeAttr('ssl')['enable']
   bash "setssl" do
     code <<-EOH
       a2enmod ssl
+      a2enmod headers
       a2ensite default-ssl
 #      grep -w forcessl /etc/owncloud/config.php| grep -qsw true || ed /etc/owncloud/config.php <<EOF
 #/);
